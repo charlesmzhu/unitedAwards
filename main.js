@@ -1,7 +1,7 @@
 var page = require ('webpage').create(),
     url = 'http://united.com',
     refresh = 0,
-    currentUrl;
+    currentUrl, alreadyReloaded;
 
 /**
  * From PhantomJS documentation:
@@ -18,20 +18,22 @@ page.onUrlChanged = function(targetUrl) {
 
 page.onLoadFinished = function(status) {
     console.log("Load finished: " + status)
-    if (phantom.state) { 
-    	phantom.state();
-    	setInterval ( function () { 
-    		page.reload();
-    	}, 9000000 );
+   /** It goes into the conditional below multiple times for some reason?
+    */
+    if (phantom.state && status == "success" && !alreadyReloaded) { 
+    	  phantom.state();
+        setTimeout ( function () { 
+          console.log ("Page reload now...");
+          page.reload(); 
+        }, 60000 );
+        alreadyReloaded = true;
     }
 };
 
 // Callback is executed each time a page is loaded...
 page.open(url, function (status) {
   if (status === 'success') {
-    if( !phantom.state ) {
-    	initialize();
-    }
+    if( !phantom.state ) initialize();
   }
 });
 
@@ -56,13 +58,15 @@ function initialize() {
 function parseResults () {
 	page.injectJs('jQuery.js');
 	refresh++;
-	console.log("Refresh #: " + refresh);
-	page.evaluate ( function() {
+	console.log("Refresh #: " + refresh + " " + new Date ());
+	var result = page.evaluate ( function() {
     	//var arr = $('.tdRewardPrice:nth-child(1) .btnBlue');
 	    if ( $('#ctl00_ContentInfo_resultsReward_showSegmentsReward1_ShowSegment_ctl00_ShowReward_ctl00_rewardSelect').length > 0 ) { 
-	    	console.log ("Saver award available"); 
+	    	return "Saver award available"; 
 	    } else {
-	    	console.log ("Can't find saver award");
+	    	return "Can't find saver award";
 	    }
     })
+  console.log(result)
+  alreadyReloaded=false; // When we are finished, reset alreadyReloaded
 }
