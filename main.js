@@ -26,12 +26,11 @@ page.onLoadFinished = function(status) {
     		console.log("Refresh #: " + refresh); 
     		page.injectJs('jquery.js'); 
     		phantom.state(); }
-    	, 60000 );
+    	, 120000 );
     }
 };
 
 page.onLoadStarted = function() {
-    console.log('Load Started');
 };
 
 
